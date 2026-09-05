@@ -1,0 +1,552 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
+
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
+local CorrectKey = "MaruByPhuocdepzai_81037c018d091f940a187"
+local FileName = "KeyPhuocdepzai.json"
+local failCount = 0
+
+local function SaveKeyToFile(key)
+    if writefile then
+        local data = '{"Key": "' .. key .. '"}'
+        pcall(function()
+            writefile(FileName, data)
+        end)
+    end
+end
+
+local function LoadKeyFromFile()
+    if readfile and isfile then
+        local success, result = pcall(function()
+            if isfile(FileName) then
+                local content = readfile(FileName)
+                if content:find('"Key"') then
+                    local startIdx, endIdx = content:find('"Key"%s*:%s*"[^"]*"')
+                    if startIdx then
+                        local keyValue = content:sub(startIdx, endIdx)
+                        local actualKey = keyValue:match('"([^"]*)"$')
+                        return actualKey
+                    end
+                end
+            end
+        end)
+        if success and result then
+            return result
+        end
+    end
+    return ""
+end
+
+local Gui = Instance.new("ScreenGui")
+Gui.Name = "CyanKeyUI"
+Gui.ResetOnSpawn = false
+Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Gui.Parent = PlayerGui
+
+local Main = Instance.new("Frame")
+Main.Size = UDim2.fromOffset(2, 1)
+Main.Position = UDim2.new(0.5, 0, 0.5, 0)
+Main.AnchorPoint = Vector2.new(0.5, 0.5)
+Main.BackgroundColor3 = Color3.fromRGB(8, 20, 30)
+Main.BorderSizePixel = 0
+Main.ClipsDescendants = true
+Main.Parent = Gui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 18)
+MainCorner.Parent = Main
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Color = Color3.fromRGB(0, 210, 255)
+Stroke.Thickness = 1.5
+Stroke.Transparency = 0.15
+Stroke.Parent = Main
+
+local Gradient = Instance.new("UIGradient")
+Gradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(8, 35, 50)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(5, 85, 110)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(5, 25, 40))
+})
+Gradient.Rotation = 35
+Gradient.Parent = Main
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -70, 0, 25)
+Title.Position = UDim2.fromOffset(15, 8)
+Title.BackgroundTransparency = 1
+Title.Text = "Get Key"
+Title.TextColor3 = Color3.fromRGB(220, 250, 255)
+Title.TextSize = 18
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Main
+
+local Subtitle = Instance.new("TextLabel")
+Subtitle.Size = UDim2.new(1, -70, 0, 20)
+Subtitle.Position = UDim2.fromOffset(15, 33)
+Subtitle.BackgroundTransparency = 1
+Subtitle.Text = "Enter your key to continue"
+Subtitle.TextColor3 = Color3.fromRGB(130, 210, 225)
+Subtitle.TextSize = 11
+Subtitle.Font = Enum.Font.Gotham
+Subtitle.TextXAlignment = Enum.TextXAlignment.Left
+Subtitle.Parent = Main
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.fromOffset(28, 28)
+CloseButton.Position = UDim2.new(1, -38, 0, 10)
+CloseButton.BackgroundColor3 = Color3.fromRGB(220, 45, 55)
+CloseButton.BorderSizePixel = 0
+CloseButton.Text = "×"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 20
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.AutoButtonColor = false
+CloseButton.Parent = Main
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 8)
+CloseCorner.Parent = CloseButton
+
+local CloseStroke = Instance.new("UIStroke")
+CloseStroke.Color = Color3.fromRGB(255, 100, 105)
+CloseStroke.Thickness = 1
+CloseStroke.Transparency = 0.2
+CloseStroke.Parent = CloseButton
+
+CloseButton.MouseEnter:Connect(function()
+    TweenService:Create(CloseButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(255, 60, 70)}):Play()
+end)
+
+CloseButton.MouseLeave:Connect(function()
+    TweenService:Create(CloseButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(220, 45, 55)}):Play()
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+    local shrinkWidth = TweenService:Create(
+        Main,
+        TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { Size = UDim2.fromOffset(2, 270) }
+    )
+    shrinkWidth:Play()
+    shrinkWidth.Completed:Wait()
+
+    local shrinkHeight = TweenService:Create(
+        Main,
+        TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { Size = UDim2.fromOffset(2, 1) }
+    )
+    shrinkHeight:Play()
+    shrinkHeight.Completed:Wait()
+
+    Gui:Destroy()
+end)
+
+local TabContainer = Instance.new("Frame")
+TabContainer.Size = UDim2.new(1, -30, 0, 34)
+TabContainer.Position = UDim2.fromOffset(15, 56)
+TabContainer.BackgroundColor3 = Color3.fromRGB(5, 15, 22)
+TabContainer.BorderSizePixel = 0
+TabContainer.Parent = Main
+
+local TabContainerCorner = Instance.new("UICorner")
+TabContainerCorner.CornerRadius = UDim.new(0, 8)
+TabContainerCorner.Parent = TabContainer
+
+local TabContainerStroke = Instance.new("UIStroke")
+TabContainerStroke.Color = Color3.fromRGB(0, 190, 235)
+TabContainerStroke.Transparency = 0.3
+TabContainerStroke.Parent = TabContainer
+
+local TabListLayout = Instance.new("UIListLayout")
+TabListLayout.FillDirection = Enum.FillDirection.Horizontal
+TabListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+TabListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+TabListLayout.Padding = UDim.new(0, 4)
+TabListLayout.Parent = TabContainer
+
+local PagesContainer = Instance.new("Frame")
+PagesContainer.Size = UDim2.new(1, -30, 0, 160)
+PagesContainer.Position = UDim2.fromOffset(15, 96)
+PagesContainer.BackgroundTransparency = 1
+PagesContainer.Parent = Main
+
+local KeyPage = Instance.new("Frame")
+KeyPage.Size = UDim2.fromScale(1, 1)
+KeyPage.BackgroundTransparency = 1
+KeyPage.Visible = true
+KeyPage.Parent = PagesContainer
+
+local KeyBox = Instance.new("TextBox")
+KeyBox.Size = UDim2.new(1, 0, 0, 42)
+KeyBox.Position = UDim2.fromOffset(0, 2)
+KeyBox.BackgroundColor3 = Color3.fromRGB(5, 28, 40)
+KeyBox.BorderSizePixel = 0
+KeyBox.PlaceholderText = "Enter Key..."
+KeyBox.PlaceholderColor3 = Color3.fromRGB(100, 160, 175)
+KeyBox.Text = LoadKeyFromFile()
+KeyBox.TextColor3 = Color3.fromRGB(225, 250, 255)
+KeyBox.TextSize = 14
+KeyBox.Font = Enum.Font.GothamMedium
+KeyBox.ClearTextOnFocus = false
+KeyBox.Parent = KeyPage
+
+local BoxCorner = Instance.new("UICorner")
+BoxCorner.CornerRadius = UDim.new(0, 10)
+BoxCorner.Parent = KeyBox
+
+local BoxStroke = Instance.new("UIStroke")
+BoxStroke.Color = Color3.fromRGB(0, 190, 235)
+BoxStroke.Thickness = 1
+BoxStroke.Transparency = 0.25
+BoxStroke.Parent = KeyBox
+
+KeyBox.Focused:Connect(function()
+    TweenService:Create(BoxStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(80, 240, 255), Thickness = 2}):Play()
+end)
+
+KeyBox.FocusLost:Connect(function()
+    TweenService:Create(BoxStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(0, 190, 235), Thickness = 1}):Play()
+end)
+
+local GetKey = Instance.new("TextButton")
+GetKey.Size = UDim2.new(0.48, 0, 0, 40)
+GetKey.Position = UDim2.new(0, 0, 0, 52)
+GetKey.BackgroundColor3 = Color3.fromRGB(0, 170, 215)
+GetKey.BorderSizePixel = 0
+GetKey.Text = "GET KEY"
+GetKey.TextColor3 = Color3.fromRGB(255, 255, 255)
+GetKey.TextSize = 14
+GetKey.Font = Enum.Font.GothamBold
+GetKey.AutoButtonColor = false
+GetKey.Parent = KeyPage
+
+local GetCorner = Instance.new("UICorner")
+GetCorner.CornerRadius = UDim.new(0, 10)
+GetCorner.Parent = GetKey
+
+local GetGradient = Instance.new("UIGradient")
+GetGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 220, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 110, 190))
+})
+GetGradient.Rotation = 90
+GetGradient.Parent = GetKey
+
+local CheckKey = Instance.new("TextButton")
+CheckKey.Size = UDim2.new(0.48, 0, 0, 40)
+CheckKey.Position = UDim2.new(0.52, 0, 0, 52)
+CheckKey.BackgroundColor3 = Color3.fromRGB(10, 50, 65)
+CheckKey.BorderSizePixel = 0
+CheckKey.Text = "CHECK KEY"
+CheckKey.TextColor3 = Color3.fromRGB(190, 240, 250)
+CheckKey.TextSize = 14
+CheckKey.Font = Enum.Font.GothamBold
+CheckKey.AutoButtonColor = false
+CheckKey.Parent = KeyPage
+
+local CheckCorner = Instance.new("UICorner")
+CheckCorner.CornerRadius = UDim.new(0, 10)
+CheckCorner.Parent = CheckKey
+
+local CheckStroke = Instance.new("UIStroke")
+CheckStroke.Color = Color3.fromRGB(0, 190, 235)
+CheckStroke.Transparency = 0.2
+CheckStroke.Parent = CheckKey
+
+local Status = Instance.new("TextLabel")
+Status.Size = UDim2.new(1, 0, 0, 25)
+Status.Position = UDim2.new(0, 0, 0, 105)
+Status.BackgroundTransparency = 1
+Status.Text = "● Waiting for key..."
+Status.TextColor3 = Color3.fromRGB(120, 210, 225)
+Status.TextSize = 12
+Status.Font = Enum.Font.GothamMedium
+Status.TextXAlignment = Enum.TextXAlignment.Center
+Status.Parent = KeyPage
+
+local TutorialPage = Instance.new("Frame")
+TutorialPage.Size = UDim2.fromScale(1, 1)
+TutorialPage.BackgroundTransparency = 1
+TutorialPage.Visible = false
+TutorialPage.Parent = PagesContainer
+
+local TutorialLabel = Instance.new("TextLabel")
+TutorialLabel.Size = UDim2.new(1, 0, 0, 48)
+TutorialLabel.Position = UDim2.new(0, 0, 0, 40)
+TutorialLabel.BackgroundColor3 = Color3.fromRGB(5, 28, 40)
+TutorialLabel.BorderSizePixel = 0
+TutorialLabel.Text = "Phuocdepzai"
+TutorialLabel.TextColor3 = Color3.fromRGB(220, 250, 255)
+TutorialLabel.TextSize = 16
+TutorialLabel.Font = Enum.Font.GothamBold
+TutorialLabel.Parent = TutorialPage
+
+local TutLabelCorner = Instance.new("UICorner")
+TutLabelCorner.CornerRadius = UDim.new(0, 10)
+TutLabelCorner.Parent = TutorialLabel
+
+local TutLabelStroke = Instance.new("UIStroke")
+TutLabelStroke.Color = Color3.fromRGB(0, 190, 235)
+TutLabelStroke.Transparency = 0.3
+TutLabelStroke.Parent = TutorialLabel
+
+local TiktokPage = Instance.new("Frame")
+TiktokPage.Size = UDim2.fromScale(1, 1)
+TiktokPage.BackgroundTransparency = 1
+TiktokPage.Visible = false
+TiktokPage.Parent = PagesContainer
+
+local TiktokBtn = Instance.new("TextButton")
+TiktokBtn.Size = UDim2.new(1, 0, 0, 48)
+TiktokBtn.Position = UDim2.new(0, 0, 0, 30)
+TiktokBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 215)
+TiktokBtn.BorderSizePixel = 0
+TiktokBtn.Text = "Coppy Id Tiktok"
+TiktokBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+TiktokBtn.TextSize = 14
+TiktokBtn.Font = Enum.Font.GothamBold
+TiktokBtn.AutoButtonColor = false
+TiktokBtn.Parent = TiktokPage
+
+local TiktokCorner = Instance.new("UICorner")
+TiktokCorner.CornerRadius = UDim.new(0, 10)
+TiktokCorner.Parent = TiktokBtn
+
+local TiktokGradient = Instance.new("UIGradient")
+TiktokGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 220, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 110, 190))
+})
+TiktokGradient.Rotation = 90
+TiktokGradient.Parent = TiktokBtn
+
+local TiktokStatus = Instance.new("TextLabel")
+TiktokStatus.Size = UDim2.new(1, 0, 0, 25)
+TiktokStatus.Position = UDim2.new(0, 0, 0, 88)
+TiktokStatus.BackgroundTransparency = 1
+TiktokStatus.Text = ""
+TiktokStatus.TextColor3 = Color3.fromRGB(100, 255, 190)
+TiktokStatus.TextSize = 12
+TiktokStatus.Font = Enum.Font.GothamMedium
+TiktokStatus.TextXAlignment = Enum.TextXAlignment.Center
+TiktokStatus.Parent = TiktokPage
+
+local tabs = {}
+local function CreateTabButton(name, page)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.32, 0, 0, 26)
+    btn.BackgroundColor3 = Color3.fromRGB(8, 25, 36)
+    btn.BorderSizePixel = 0
+    btn.Text = name
+    btn.TextColor3 = Color3.fromRGB(140, 210, 230)
+    btn.TextSize = 13
+    btn.Font = Enum.Font.GothamBold
+    btn.AutoButtonColor = false
+    btn.Parent = TabContainer
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 7)
+    corner.Parent = btn
+
+    btn.MouseButton1Click:Connect(function()
+        for _, t in pairs(tabs) do
+            TweenService:Create(t.Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(8, 25, 36), TextColor3 = Color3.fromRGB(140, 210, 230)}):Play()
+            t.Page.Visible = false
+        end
+        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 170, 215), TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+        page.Visible = true
+    end)
+
+    table.insert(tabs, {Btn = btn, Page = page})
+    return btn
+end
+
+local tab1Btn = CreateTabButton("Key", KeyPage)
+local tab2Btn = CreateTabButton("Tutorial", TutorialPage)
+local tab3Btn = CreateTabButton("Tiktok", TiktokPage)
+
+tab1Btn.BackgroundColor3 = Color3.fromRGB(0, 170, 215)
+tab1Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local function ButtonEffect(button)
+    local original = button.Size
+    TweenService:Create(button, TweenInfo.new(0.08), {Size = original - UDim2.fromOffset(4, 4)}):Play()
+    task.delay(0.08, function()
+        if button and button.Parent then
+            TweenService:Create(button, TweenInfo.new(0.12), {Size = original}):Play()
+        end
+    end)
+end
+
+GetKey.MouseButton1Click:Connect(function()
+    ButtonEffect(GetKey)
+    Status.Text = "● Đã copy link get key"
+    Status.TextColor3 = Color3.fromRGB(100, 230, 255)
+    pcall(function()
+        setclipboard("https://link4sub.com/m9ziT9sxxR")
+        StarterGui:SetCore("SendNotification", {
+            Title = "Phuocdepzai Check Key",
+            Text = "Đã Coppy Link Get Key",
+            Duration = 3
+        })
+    end)
+end)
+
+local function ProcessCheckKey()
+    local enteredKey = KeyBox.Text
+
+    if enteredKey == "" then
+        failCount += 1
+        if failCount >= 10 then
+            Player:Kick("Bạn đã nhập key sai hoặc key trống quá nhiều lần")
+            return
+        end
+        Status.Text = "● Vui Lòng Nhập Key Vào Ô"
+        Status.TextColor3 = Color3.fromRGB(255, 180, 80)
+        pcall(function()
+            StarterGui:SetCore("SendNotification", {
+                Title = "Phuocdepzai Check Key",
+                Text = "Vui Lòng Nhập Key Vào Ô",
+                Duration = 3
+            })
+        end)
+        return
+    end
+
+    if enteredKey == CorrectKey then
+        Status.Text = "Đã nhập đúng key ✔️"
+        Status.TextColor3 = Color3.fromRGB(100, 255, 190)
+        
+        SaveKeyToFile(enteredKey)
+
+        pcall(function()
+            StarterGui:SetCore("SendNotification", {
+                Title = "Phuocdepzai Check Key",
+                Text = "Đã nhập đúng key ✔️",
+                Duration = 3
+            })
+        end)
+        
+        task.delay(0.5, function()
+            local shrinkWidth = TweenService:Create(
+                Main,
+                TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                { Size = UDim2.fromOffset(2, 270) }
+            )
+            shrinkWidth:Play()
+            shrinkWidth.Completed:Wait()
+
+            local shrinkHeight = TweenService:Create(
+                Main,
+                TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                { Size = UDim2.fromOffset(2, 1) }
+            )
+            shrinkHeight:Play()
+            shrinkHeight.Completed:Wait()
+
+            Gui:Destroy()
+            
+            pcall(function()
+                loadstring(game:HttpGet('https://pastefy.app/ukmt0XpY/raw'))()
+            end)
+        end)
+    else
+        failCount += 1
+        if failCount >= 10 then
+            Player:Kick("Bạn đã nhập key sai hoặc key trống quá nhiều lần")
+            return
+        end
+        Status.Text = "Nhập Sai Key ❌"
+        Status.TextColor3 = Color3.fromRGB(255, 80, 80)
+        pcall(function()
+            StarterGui:SetCore("SendNotification", {
+                Title = "Phuocdepzai Check Key",
+                Text = "Nhập Sai Key ❌",
+                Duration = 3
+            })
+        end)
+    end
+end
+
+CheckKey.MouseButton1Click:Connect(function()
+    ButtonEffect(CheckKey)
+    ProcessCheckKey()
+end)
+
+TiktokBtn.MouseButton1Click:Connect(function()
+    ButtonEffect(TiktokBtn)
+    pcall(function()
+        setclipboard("phuocdepzaiz")
+    end)
+    TiktokStatus.Text = "● Đã copy ID: phuocdepzaiz"
+end)
+
+local Dragging = false
+local DragStart
+local StartPosition
+
+local function UpdateDrag(Input)
+    local Delta = Input.Position - DragStart
+    Main.Position = UDim2.new(
+        StartPosition.X.Scale,
+        StartPosition.X.Offset + Delta.X,
+        StartPosition.Y.Scale,
+        StartPosition.Y.Offset + Delta.Y
+    )
+end
+
+Title.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+    or Input.UserInputType == Enum.UserInputType.Touch then
+        Dragging = true
+        DragStart = Input.Position
+        StartPosition = Main.Position
+        Input.Changed:Connect(function()
+            if Input.UserInputState == Enum.UserInputState.End then
+                Dragging = false
+            end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(Input)
+    if Dragging and (
+        Input.UserInputType == Enum.UserInputType.MouseMovement
+        or Input.UserInputType == Enum.UserInputType.Touch
+    ) then
+        UpdateDrag(Input)
+    end
+end)
+
+task.spawn(function()
+    task.wait(1)
+
+    local expandWidth = TweenService:Create(
+        Main,
+        TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { Size = UDim2.fromOffset(430, 1) }
+    )
+    expandWidth:Play()
+    expandWidth.Completed:Wait()
+
+    task.wait(0.5)
+
+    local expandHeight = TweenService:Create(
+        Main,
+        TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { Size = UDim2.fromOffset(430, 270) }
+    )
+    expandHeight:Play()
+
+    if KeyBox.Text ~= "" then
+        task.wait(0.2)
+        ProcessCheckKey()
+    end
+end)
