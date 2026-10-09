@@ -1,0 +1,155 @@
+shyzu Roblox Hub [ one click ]
+-- Fluent UI: single information tab, live client-side tracker.
+-- This tracker reads only values/tools replicated to the local client.
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local TargetGui = (gethui and gethui()) or CoreGui or PlayerGui
+local LOGO_ID = "rbxthumb://type=Asset&id=126234343701615&w=420&h=420"
+
+for _, root in ipairs({TargetGui, PlayerGui}) do
+    for _, name in ipairs({"ShizuRoblox_Toggle", "ShizuRoblox_Stats", "ShizuRoblox_InfoOnly", "shyzuRobloxInfo"}) do
+        local old = root:FindFirstChild(name)
+        if old then old:Destroy() end
+    end
+end
+
+local ok, Fluent = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+end)
+if not ok or not Fluent then warn("[shyzu Roblox Hub] Không tải được Fluent UI") return end
+
+local Window = Fluent:CreateWindow({
+    Title = "shyzu Roblox Hub [ one click ]",
+    SubTitle = "PLAYER • FRUIT • PVP • SEA PROGRESS",
+    TabWidth = 1,
+    Size = UDim2.fromOffset(540, 560),
+    Acrylic = false,
+    Theme = "Dark",
+    MinimizeKey = nil
+})
+local Info = Window:AddTab({Title = "Thông Tin", Icon = "info"})
+Window:SelectTab(Info)
+
+local function findValue(names)
+    local roots = {LocalPlayer:FindFirstChild("leaderstats"), LocalPlayer}
+    for _, root in ipairs(roots) do
+        if root then
+            for _, name in ipairs(names) do
+                local obj = root:FindFirstChild(name)
+                if obj then
+                    if obj:IsA("ValueBase") then return tostring(obj.Value) end
+                    local attr = obj:GetAttribute("Value")
+                    if attr ~= nil then return tostring(attr) end
+                end
+            end
+        end
+    end
+    return "Chưa được client cung cấp"
+end
+
+local function scanTools()
+    local rows, names = {}, {}
+    local backpack = LocalPlayer:FindFirstChildOfClass("Backpack")
+    local character = LocalPlayer.Character
+    local function scan(container, prefix)
+        if not container then return end
+        for _, obj in ipairs(container:GetChildren()) do
+            if obj:IsA("Tool") then
+                table.insert(rows, prefix .. obj.Name)
+                names[string.lower(obj.Name)] = true
+            end
+        end
+    end
+    scan(backpack, "🎒 ")
+    scan(character, "✋ ")
+    return rows, names
+end
+
+local function status(names, toolNames)
+    for _, wanted in ipairs(names) do
+        if toolNames[string.lower(wanted)] then return "✅ Đang có / đang cầm" end
+    end
+    return "▫️ Chưa thấy trong Backpack/nhân vật"
+end
+
+local playerParagraph = Info:AddParagraph({Title = "PLAYER INFO", Content = "Đang tải..."})
+local fruitParagraph = Info:AddParagraph({Title = "FRUIT", Content = "Đang quét..."})
+local pvpParagraph = Info:AddParagraph({Title = "PVP LOADOUT", Content = "Đang quét..."})
+local seaParagraph = Info:AddParagraph({Title = "SEA PROGRESSION", Content = "Đang kiểm tra..."})
+local toolParagraph = Info:AddParagraph({Title = "BACKPACK / EQUIPPED ITEMS", Content = "Đang quét..."})
+local refreshedAt = Info:AddParagraph({Title = "Trạng thái", Content = "Tự cập nhật sau mỗi 3 giây."})
+
+local function getFruitLines(toolNames, rows)
+    local fruitWords = {"fruit", "fruits", "kilo", "rocket", "spin", "chop", "spring", "bomb", "smoke", "spike", "flame", "ice", "sand", "dark", "light", "magma", "quake", "buddha", "love", "spider", "sound", "phoenix", "portal", "rumble", "pain", "blizzard", "gravity", "mammoth", "trex", "t-rex", "dough", "shadow", "venom", "control", "spirit", "dragon", "leopard", "kitsune", "yeti"}
+    local found = {}
+    for _, row in ipairs(rows) do
+        local lower = string.lower(row)
+        for _, word in ipairs(fruitWords) do
+            if string.find(lower, word, 1, true) then table.insert(found, row); break end
+        end
+    end
+    if #found == 0 then return "Không phát hiện Tool có tên giống fruit đang cầm / trong Backpack.\nFruit lưu trữ không nhất thiết xuất hiện ở đây." end
+    return table.concat(found, "\n")
+end
+
+local function refresh()
+    local rows, toolNames = scanTools()
+    local levelText = findValue({"Level", "level"})
+    local level = tonumber(string.match(levelText, "%d+"))
+    playerParagraph:SetDesc(
+        "Tên: " .. LocalPlayer.Name .. " (@" .. LocalPlayer.DisplayName .. ")\n" ..
+        "Level: " .. levelText .. "\n" ..
+        "Beli: " .. findValue({"Beli", "Money", "Belly"}) .. "\n" ..
+        "Fragments (F): " .. findValue({"Fragments", "fragment"}) .. "\n" ..
+        "Race: " .. findValue({"Race", "race"}) .. "\n" ..
+        "Race V3: cần xác minh trong game; không suy đoán"
+    )
+    fruitParagraph:SetDesc(getFruitLines(toolNames, rows))
+    pvpParagraph:SetDesc(
+        "Cursed Dual Katana: " .. status({"Cursed Dual Katana", "Cursed Dual Katana [CDK]"}, toolNames) .. "\n" ..
+        "Soul Guitar: " .. status({"Soul Guitar"}, toolNames) .. "\n" ..
+        "Godhuman: " .. status({"Godhuman"}, toolNames) .. "\n" ..
+        "Other PvP tools: kiểm tra danh sách vật phẩm bên dưới"
+    )
+    local seaText
+    if level and level >= 1500 then
+        seaText = "Level đạt mốc 1500. Kiểm tra nhiệm vụ/điều kiện Third Sea trong game và nói chuyện với NPC liên quan.\nChecklist: Bartilo/Colosseum đã hoàn tất? Don Swan đã xử lý? rip_indra/King Red Head đã hoàn tất? Mr. Captain đã nói chuyện?"
+    elseif level and level >= 700 then
+        seaText = "Đủ mốc Level 700 để bắt đầu điều kiện Second Sea.\nChecklist: nói chuyện Military Detective → lấy chìa khóa → đánh Ice Admiral → nói chuyện Experienced Captain."
+    elseif level and level >= 350 then
+        seaText = "Tiếp tục tăng Level và hoàn thành nhiệm vụ đảo hiện tại. Second Sea yêu cầu Level 700 cùng chuỗi nhiệm vụ mở Sea."
+    elseif level then
+        seaText = "Tiếp tục nhiệm vụ theo Level tại First Sea. Mục tiêu mở Second Sea: Level 700 và chuỗi Military Detective / Ice Admiral / Experienced Captain."
+    else
+        seaText = "Không đọc được Level từ client nên chưa thể ước lượng Sea. Kiểm tra Level trong game; checklist Sea là hướng dẫn thủ công, không phải xác nhận quest tự động."
+    end
+    seaParagraph:SetDesc(seaText)
+    toolParagraph:SetDesc(#rows > 0 and table.concat(rows, "\n") or "Không thấy Tool trong Backpack hoặc nhân vật hiện tại.")
+    refreshedAt:SetDesc("Cập nhật lúc " .. os.date("%H:%M:%S") .. " • Quét " .. tostring(#rows) .. " Tool")
+end
+
+Info:AddButton({Title = "Làm mới ngay", Description = "Quét lại chỉ số, fruit và vật phẩm", Callback = function() pcall(refresh) end})
+refresh()
+task.spawn(function()
+    while task.wait(3) do pcall(refresh) end
+end)
+
+-- Best-effort hide titlebar buttons across common Fluent UI builds.
+task.defer(function()
+    for _ = 1, 30 do
+        task.wait(0.25)
+        for _, root in ipairs({TargetGui, PlayerGui}) do
+            for _, obj in ipairs(root:GetDescendants()) do
+                if obj:IsA("GuiButton") then
+                    local n = string.lower(obj.Name or "")
+                    local t = string.lower(obj:IsA("TextButton") and obj.Text or "")
+                    if n:find("close") or n:find("minimize") or n:find("collapse") or t == "x" or t == "×" or t == "-" or t == "−" then
+                        obj.Visible = false
+                    end
+                end
+            end
+        end
+    end
+end)
