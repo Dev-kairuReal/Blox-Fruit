@@ -1,4 +1,4 @@
--- Shyzu Roblox - Fluent UI, one information tab only
+-- shyzu Roblox Hub [ one click ] - Fluent UI, one information tab only
 -- UI/info display refactor based on the uploaded script. No floating logo toggle.
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
@@ -18,7 +18,7 @@ end)
 if not ok or not Fluent then warn("[Shyzu Roblox] Không tải được Fluent UI") return end
 
 local Window = Fluent:CreateWindow({
-    Title = "shyzu Roblox",
+    Title = "shyzu Roblox Hub [ one click ]",
     SubTitle = "PLAYER INFO",
     TabWidth = 0,
     Size = UDim2.fromOffset(520, 430),
